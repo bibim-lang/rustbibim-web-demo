@@ -1,0 +1,30 @@
+version: "3"
+services:
+  rustbibim-wasm:
+    build:
+      context: .
+      dockerfile: rustbibim-wasm.dockerfile
+    profiles: ["build"]
+    command: build
+    volumes:
+      - ./rustbibim-wasm:/usr/src/rustbibim-wasm
+  app:
+    build:
+      context: .
+      dockerfile: app.dockerfile
+    profiles: ["dev"]
+    ports:
+      - "80:80"
+    volumes:
+      - ./app:/home/node/app
+      - ./rustbibim-wasm/pkg:/home/node/rustbibim-wasm
+    command: npm run dev
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./app/dist:/usr/share/nginx/html
+    restart: unless-stopped
